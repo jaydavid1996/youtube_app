@@ -1,157 +1,178 @@
 <?php
 
-
-class YoutubeChannel {
-    public static function getChannel($Username){
+include_once 'config.php';
+class YoutubeChannel
+{
+    public static function getChannel($Username)
+    {
         $url = 'https://www.googleapis.com/youtube/v3/channels?key=AIzaSyDuXcavezwBqd9NbfNvUBnxtrM7qaKnQfI&forUsername='.$Username.'&part=id,snippet';
         $channel = json_decode(file_get_contents($url), true);
         $response['channel_id'] = $channel['items'][0]['id'];
         $response['title'] = $channel['items'][0]['snippet']['title'];
         $response['description'] = $channel['items'][0]['snippet']['description'];
         $response['photo'] = $channel['items'][0]['snippet']['thumbnails']['default']['url'];
-        
+
         return $response;
     }
 }
-class YoutubeChannelVideos {
-    protected $API_KEY = 'AIzaSyDuXcavezwBqd9NbfNvUBnxtrM7qaKnQfI';
+class YoutubeChannelVideos
+{
+    protected $API_KEY = API_KEY;
     protected $channelID = '';
-    protected $maxResults=50;
-    public function __construct($channelID){
+    protected $maxResults = 50;
+
+    public function __construct($channelID)
+    {
         $this->channelID = $channelID;
     }
 
-    public function getVideosPage1(){
+    public function getVideosPage1()
+    {
         $url = 'https://www.googleapis.com/youtube/v3/search?order=date&part=snippet&channelId='.$this->channelID.'&maxResults='.$this->maxResults.'&key='.$this->API_KEY.'';
         // $this->nextpage_token ='CDIQAA';
-  
+        // echo $url;
+        echo '<br>';
         $videoList = json_decode(file_get_contents($url), true);
-        $this->nextpage_token =$videoList['nextPageToken'];
+        $this->nextpage_token = $videoList['nextPageToken'];
         $videos = [];
         foreach ($videoList['items'] as $key => $value) {
             $video = [];
-            $video['video_id'] = isset($value['id']['videoId'])?$value['id']['videoId']:'';
-            $video['playlist_id'] = isset($value['id']['playlistId'])?$value['id']['playlistId']:'';
+            $video['video_id'] = isset($value['id']['videoId']) ? $value['id']['videoId'] : '';
+            $video['playlist_id'] = isset($value['id']['playlistId']) ? $value['id']['playlistId'] : '';
             $video['video_title'] = $value['snippet']['title'];
             $video['video_thumbnails'] = $value['snippet']['thumbnails']['medium']['url'];
-            $video['index'] = 
-            $videos[] =$video;
-
-         
+            $video['index'] =
+            $videos[] = $video;
         }
-        
+
         return $videos;
     }
+
     public function getVideosPage2()
     {
         $url = 'https://www.googleapis.com/youtube/v3/search?order=date&part=snippet&channelId='.$this->channelID.'&maxResults='.$this->maxResults.'&key='.$this->API_KEY.'&pageToken='.$this->nextpage_token;
+        // echo $url;
         $videoList = json_decode(file_get_contents($url), true);
         $videos = [];
         foreach ($videoList['items'] as $key => $value) {
             $video = [];
-            $video['video_id'] = isset($value['id']['videoId'])?$value['id']['videoId']:'';
-            $video['playlist_id'] = isset($value['id']['playlistId'])?$value['id']['playlistId']:'';
+            $video['video_id'] = isset($value['id']['videoId']) ? $value['id']['videoId'] : '';
+            $video['playlist_id'] = isset($value['id']['playlistId']) ? $value['id']['playlistId'] : '';
             $video['video_title'] = $value['snippet']['title'];
             $video['video_thumbnails'] = $value['snippet']['thumbnails']['medium']['url'];
-            $video['index'] = 
-            $videos[] =$video;
+            $video['index'] =
+            $videos[] = $video;
+        }
 
-         
-        }        
         return $videos;
     }
 }
 
-class main {
-    private $servername = "localhost";
-    private $username = "root";
-    private $password = "";
-    private $dbname = "youtube_app";
+class main
+{
+    private $servername = SERVER_NAME;
+    private $username = SERVER_USERNAME;
+    private $password = SERVER_PASSWORD;
+    private $dbname = SERVER_DATABASE;
     private $conn = null;
-    public function __construct(){
-          
-         $this->conn = new mysqli($this->servername, $this->username, $this->password,$this->dbname);
+
+    public function __construct()
+    {
+        $this->conn = new mysqli($this->servername, $this->username, $this->password, $this->dbname);
 
         if ($this->conn->connect_error) {
-            die("Connection failed: " . $conn->connect_error);
-        } 
+            die('Connection failed: '.$conn->connect_error);
+        }
     }
-    public function sync(){
+
+    public function sync()
+    {
         $channel = YoutubeChannel::getChannel('NBA');
-        if($this->insertChannel($channel)){
+        if ($this->insertChannel($channel)) {
             $this->insertVideos($channel['channel_id']);
             echo 'success sync';
-        }else{
+        } else {
             echo 'failed to sync';
         }
-            
     }
-    public function insertChannel($channel){
-        $channel = (object)$channel;
-        $channel->title= $this->conn->real_escape_string($channel->title);
-        $channel->description= $this->conn->real_escape_string($channel->description);
+
+    public function insertChannel($channel)
+    {
+        $channel = (object) $channel;
+        $channel->title = $this->conn->real_escape_string($channel->title);
+        $channel->description = $this->conn->real_escape_string($channel->description);
         $sql = "INSERT IGNORE INTO youtube_channels (channel_id, title, descriptions,photo)
                 VALUES ('".$channel->channel_id."', '".$channel->title."', '".$channel->description."','".$channel->photo."')";
-        if ($this->conn->query($sql) === TRUE) {
-            echo "New record created successfully";
+        if ($this->conn->query($sql) === true) {
+            echo 'New record created successfully';
+
             return true;
         } else {
-            echo "Error: " . $sql . "<br>" . $this->conn->error;
+            echo 'Error: '.$sql.'<br>'.$this->conn->error;
+
             return false;
         }
     }
-    public function insertVideos($channel_id){
+
+    public function insertVideos($channel_id)
+    {
         $youtube = new YoutubeChannelVideos($channel_id);
-       
-        $sql = "INSERT IGNORE INTO youtube_channel_videos (channel_id, title, descriptions,thumbnails,video_id,playlist_id) VALUES ";
-        $batch1 = $youtube->getVideosPage1(); 
-        
+
+        $sql = 'INSERT IGNORE INTO youtube_channel_videos (channel_id, title, descriptions,thumbnails,video_id,playlist_id) VALUES ';
+        $batch1 = $youtube->getVideosPage1();
+
         foreach ($batch1 as $key => $value) {
             // $value = (object) $value;
-        //     echo '<pre>';
-        // print_r($value);exit;
+            //     echo '<pre>';
+            // print_r($value);exit;
+            // echo '</pre>';
+            $value['video_title'] = $this->conn->real_escape_string($value['video_title']);
+            $value['video_title'] = str_replace('|', '', $value['video_title']);
+            if ($key != 0) {
+                $sql .= ', ';
+            }
+            $sql .= "('".$channel_id."', '".$value['video_title']."', ' ','".$value['video_thumbnails']."','".$value['video_id']."','".$value['playlist_id']."')";
+        }
+
+        // echo '<pre>';
+        // print_r($sql);
+        // exit;
         // echo '</pre>';
-            $value['video_title']= $this->conn->real_escape_string($value['video_title']);
-            $value['video_title'] = str_replace('|','',$value['video_title']);
-            if($key!=0){
-                $sql.= ', ';
-            }
-            $sql.="  ('".$channel_id."', '".$value['video_title']."', ' ','".$value['video_thumbnails']."','".$value['video_id']."','".$value['playlist_id']."')";
-        }
 
-        if ($this->conn->query($sql) === TRUE) {
-            echo "New records created successfully";
-            // return true;
+        if ($this->conn->query($sql) === true) {
+            echo 'New records created successfully';
+        // return true;
         } else {
-            echo "Error: " . $sql . "<br>" . $this->conn->error;
+            echo 'Error: '.$sql.'<br>'.$this->conn->error;
             // return false;
         }
+        $sql = '';
+        $sql = 'INSERT IGNORE INTO youtube_channel_videos (channel_id, title, descriptions,thumbnails,video_id,playlist_id) VALUES ';
+        $batch2 = $youtube->getVideosPage2();
 
-        $sql = "INSERT IGNORE INTO youtube_channel_videos (channel_id, title, descriptions,thumbnails,video_id,playlist_id) VALUES ";
-        $batch1 = (object)$youtube->getVideosPage2(); 
-        foreach ($batch1 as $key => $value) {
-
-            $value['video_title']= $this->conn->real_escape_string($value['video_title']);
-            $value['video_title'] = str_replace('|','',$value['video_title']);
-            if($key!=0){
-                $sql.= ', ';
+        foreach ($batch2 as $key => $value) {
+            $value['video_title'] = $this->conn->real_escape_string($value['video_title']);
+            $value['video_title'] = str_replace('|', '', $value['video_title']);
+            if ($key != 0) {
+                $sql .= ', ';
             }
-            $sql.=" ('".$channel_id."', '".$value['video_title']."', ' ','".$value['video_thumbnails']."','".$value['video_id']."','".$value['playlist_id']."')";
+            $sql .= " ('".$channel_id."', '".$value['video_title']."', ' ','".$value['video_thumbnails']."','".$value['video_id']."','".$value['playlist_id']."')";
         }
 
-        if ($this->conn->query($sql) === TRUE) {
-            echo "New records created successfully";
-            // return true;
+        if ($this->conn->query($sql) === true) {
+            echo 'New records created successfully batch 2';
+        // return true;
         } else {
-            echo "Error: " . $sql . "<br>" . $this->conn->error;
+            echo 'Error: '.$sql.'<br>'.$this->conn->error;
             // return false;
         }
-
     }
-    public function __destruct(){
+
+    public function __destruct()
+    {
         $this->conn->close();
     }
 }
 $main = new main();
 $main->sync();
-?>
+header('Location: index.html', true, 302);

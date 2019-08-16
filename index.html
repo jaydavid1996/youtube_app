@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Youtube App</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="animate.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script> -->
+  <style>
+  #tile_container {
+    /* background-color:red; */
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+  </style>
+</head>
+<body>
+
+<div class="jumbotron text-center">
+    <div class="row">
+        <div class="col-4">
+            <img src="" alt="" id="channel_photo">
+        </div>
+        <div class="col-4">
+
+            <h1 id="channel_title"><a href="sync_youtube_channel.php">Sync</a></h1>
+            <p id="channel_description"></p> 
+        </div>
+    </div>
+</div>
+  
+<div class="container">
+  <div class="row" id="video_container">
+      
+
+
+</div>
+<script>
+    function play(){
+        // alert()
+        console.log(this);
+        // console.log(playlist_id);
+    }
+    function load() {
+    
+       var xhttp = new XMLHttpRequest();
+       xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                var data = JSON.parse(this.responseText);
+                
+                document.getElementById("channel_title").innerHTML = data[0].title;
+                document.getElementById("channel_description").innerHTML = data[0].descriptions;
+                document.getElementById("channel_photo").setAttribute('src', data[0].photo);
+
+                data[0].videos.forEach(element => {
+                    
+                    var id = element.video_id?element.video_id:element.playlist_id;
+                    var base_url = element.video_id?"https://www.youtube.com/watch?v=":"playlist.php?play_id=";
+                    // var is_playlist = element.video_id?'green':'red';
+
+                    console.log(base_url);
+                    video = document.createElement('div');
+                    // video.setAttribute('style',"background-color:"+is_playlist);
+                    
+                    _tile = document.createElement('a');
+                    _tile.classList.add('row');
+                    _tile.setAttribute('id','tile_container');
+                    _tile.setAttribute('target','_blank');
+                    
+                    _tile.setAttribute('href',base_url+id);
+
+                    _tile.classList.add('container');
+                    
+                    _img = document.createElement('img');
+                    _img.setAttribute('src',element.thumbnails) ;
+                  
+                    _img.classList.add('col-sm-4');
+                    _img.classList.add('img-rounded');
+
+                    _title = document.createElement('h6');
+                    _title.classList.add('col-sm-8')
+                    _title.innerHTML = element.title;
+                    video.classList.add('col-sm-6');
+                    video.classList.add('slideInUp');
+                    video.classList.add('animated');
+                    _tile.appendChild(_img);
+                    _tile.appendChild(_title);
+                    video.appendChild(_tile);
+                    
+                    document.getElementById("video_container").appendChild(video);
+                });
+              
+            }
+         };
+    
+       xhttp.open("POST", "youtube_channel_json.php", true);
+       xhttp.send();
+    }
+    load();
+ 
+</script>
+</body>
+</html>

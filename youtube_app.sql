@@ -1,103 +1,84 @@
--- phpMyAdmin SQL Dump
--- version 4.6.6deb5
--- https://www.phpmyadmin.net/
+-- MySQL dump 10.13  Distrib 5.7.27, for Linux (x86_64)
 --
--- Host: localhost:3306
--- Generation Time: Aug 15, 2019 at 09:09 AM
--- Server version: 5.7.27-0ubuntu0.18.04.1
--- PHP Version: 7.2.19-0ubuntu0.18.04.2
-
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-SET time_zone = "+00:00";
-
+-- Host: localhost    Database: youtube_app
+-- ------------------------------------------------------
+-- Server version	5.7.27-0ubuntu0.18.04.1
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
-
---
--- Database: `youtube_app`
---
-
--- --------------------------------------------------------
-
---
--- Table structure for table `youtube_channels`
---
-
-CREATE TABLE `youtube_channels` (
-  `id` int(11) NOT NULL,
-  `channel_id` varchar(150) NOT NULL,
-  `title` varchar(255) NOT NULL,
-  `descriptions` varchar(300) NOT NULL,
-  `photo` varchar(200) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
---
--- Dumping data for table `youtube_channels`
---
-
-INSERT INTO `youtube_channels` (`id`, `channel_id`, `title`, `descriptions`, `photo`) VALUES
-(1, 'UCWJ2lWNubArHWmf3FIHbfcQ', 'NBA', 'National Basketball Association.  Official home of the most compelling basketball action from the NBA', 'https://yt3.ggpht.com/a/AGF-l78U5c2H6ecI8vrMu9seGbF3K3fHJ7rtaU8n=s88-c-k-c0xffffffff-no-rj-mo');
-
--- --------------------------------------------------------
+/*!40101 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
 -- Table structure for table `youtube_channel_videos`
 --
 
+DROP TABLE IF EXISTS `youtube_channel_videos`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `youtube_channel_videos` (
-  `id` int(11) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `channel_id` varchar(150) NOT NULL,
   `title` varchar(255) NOT NULL,
   `descriptions` varchar(300) NOT NULL,
   `thumbnails` varchar(250) NOT NULL,
   `video_id` varchar(150) NOT NULL,
-  `playlist_id` varchar(150) NOT NULL
+  `playlist_id` varchar(150) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `playlist_id_UNIQUE` (`playlist_id`,`video_id`),
+  UNIQUE KEY `video_id_UNIQUE` (`video_id`,`playlist_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `youtube_channel_videos`
 --
 
-INSERT INTO `youtube_channel_videos` (`id`, `channel_id`, `title`, `descriptions`, `thumbnails`, `video_id`, `playlist_id`) VALUES
-(1, 'UCWJ2lWNubArHWmf3FIHbfcQ', 'NBA&#39;s Best Between The Legs Assists  2018-19 NBA Season  #NBAAssistWeek', ' ', 'https://i.ytimg.com/vi/imLkGKt9dCE/mqdefault.jpg', 'imLkGKt9dCE', ''),
-(51, 'UCWJ2lWNubArHWmf3FIHbfcQ', 'Best of 2019 NBA Finals', ' ', 'https://i.ytimg.com/vi/LMi7j68gecs/mqdefault.jpg', '', 'PLlVlyGVtvuVnu70yF1tnWQ373207auB1o');
+LOCK TABLES `youtube_channel_videos` WRITE;
+/*!40000 ALTER TABLE `youtube_channel_videos` DISABLE KEYS */;
+/*!40000 ALTER TABLE `youtube_channel_videos` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
--- Indexes for dumped tables
+-- Table structure for table `youtube_channels`
 --
 
---
--- Indexes for table `youtube_channels`
---
-ALTER TABLE `youtube_channels`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `channel_id` (`channel_id`);
+DROP TABLE IF EXISTS `youtube_channels`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `youtube_channels` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `channel_id` varchar(150) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `descriptions` varchar(300) NOT NULL,
+  `photo` varchar(200) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `channel_id` (`channel_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Indexes for table `youtube_channel_videos`
---
-ALTER TABLE `youtube_channel_videos`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `video_id` (`video_id`),
-  ADD UNIQUE KEY `playlist_id` (`playlist_id`);
-
---
--- AUTO_INCREMENT for dumped tables
+-- Dumping data for table `youtube_channels`
 --
 
---
--- AUTO_INCREMENT for table `youtube_channels`
---
-ALTER TABLE `youtube_channels`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
---
--- AUTO_INCREMENT for table `youtube_channel_videos`
---
-ALTER TABLE `youtube_channel_videos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=201;
+LOCK TABLES `youtube_channels` WRITE;
+/*!40000 ALTER TABLE `youtube_channels` DISABLE KEYS */;
+/*!40000 ALTER TABLE `youtube_channels` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2019-08-16 11:52:59
